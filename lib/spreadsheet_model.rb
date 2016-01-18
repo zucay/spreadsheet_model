@@ -37,9 +37,7 @@ module SpreadsheetModel
 
     def self.find(key)
       import unless cached?
-      value = read_cache(key)
-      fail 'RecordNotFound' unless value
-      self.new(value)
+      read_cache(key)
     end
 
     def self.cached?
