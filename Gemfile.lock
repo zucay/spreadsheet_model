@@ -86,10 +86,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler (~> 1.11)
+  bundler
   minitest (~> 5.0)
   rake (~> 10.0)
   spreadsheet_model!
 
 BUNDLED WITH
-   1.11.2
+   1.10.6
