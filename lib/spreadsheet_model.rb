@@ -6,6 +6,7 @@ require 'active_support/core_ext'
 
 module SpreadsheetModel
   extend ActiveSupport::Concern
+  extend ActiveModel::Model
 
   included do
     def self.on_import(&block)
@@ -36,7 +37,9 @@ module SpreadsheetModel
 
     def self.find(key)
       import unless cached?
-      read_cache(key)
+      value = read_cache(key)
+      fail 'RecordNotFound' unless value
+      self.new(value)
     end
 
     def self.cached?
