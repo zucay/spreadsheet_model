@@ -7,11 +7,24 @@ require 'active_model'
 
 module SpreadsheetModel
   extend ActiveSupport::Concern
-  extend ActiveModel::Model
+  include ActiveModel::Model
 
   included do
     def self.on_import(&block)
       @import_callback = block
+    end
+
+    def self.attr_accessor(*args)
+      super
+      @@attr_names = args
+    end
+
+    def [](name)
+      @__row[name]
+    end
+
+    def []=(name, value)
+      @__row[name] = value
     end
 
     def self.import
@@ -38,7 +51,16 @@ module SpreadsheetModel
 
     def self.find(key)
       import unless cached?
-      read_cache(key)
+      row = read_cache(key)
+      attributes = row.select { |key, _| @@attr_names.include?(key.to_sym) }
+      #binding.pry
+      if attributes['type'].to_s.present?
+        instance = attributes['type'].constantize.new(attributes)
+      else
+        instance = self.new(attributes)
+      end
+      instance.instance_variable_set(:@__row, row)
+      instance
     end
 
     def self.cached?
