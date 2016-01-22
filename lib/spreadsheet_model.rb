@@ -16,7 +16,7 @@ module SpreadsheetModel
 
     def self.attr_accessor(*args)
       super
-      @@attr_names = args
+      @@column_names = args
     end
 
     def [](name)
@@ -52,8 +52,9 @@ module SpreadsheetModel
     def self.find(key)
       import unless cached?
       row = read_cache(key)
-      attributes = row.select { |key, _| @@attr_names.include?(key.to_sym) }
-      #binding.pry
+      return nil unless row
+      attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
+
       if attributes['type'].to_s.present?
         instance = attributes['type'].constantize.new(attributes)
       else

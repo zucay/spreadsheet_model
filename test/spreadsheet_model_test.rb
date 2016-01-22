@@ -38,6 +38,10 @@ class SpreadsheetModelTest < Minitest::Test
     assert_equal '200', TestModel.find(2).value
   end
 
+  def test_that_it_returns_nil_when_record_not_found
+    assert_equal nil, TestModel.find('foobar')
+  end
+
   def test_that_it_can_hash_like_access
     assert_equal '100', TestModel.find(1)['value']
   end
