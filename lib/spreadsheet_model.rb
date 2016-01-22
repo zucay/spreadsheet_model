@@ -3,6 +3,7 @@ require 'google/api_client'
 require 'google_drive'
 require 'active_support'
 require 'active_support/core_ext'
+require 'active_model'
 
 module SpreadsheetModel
   extend ActiveSupport::Concern
@@ -46,12 +47,17 @@ module SpreadsheetModel
 
     private
 
+    def self.cache
+      @@cache = Rails.cache if defined? Rails
+      @@cache ||= ActiveSupport::Cache::MemoryStore.new
+    end
+
     def self.read_cache(key)
-      Rails.cache.read "#{name}::#{key}"
+      cache.read "#{name}::#{key}"
     end
 
     def self.write_cache(key, value)
-      Rails.cache.write "#{name}::#{key}", value
+      cache.write "#{name}::#{key}", value
     end
 
     def self.worksheets(sheet_key)

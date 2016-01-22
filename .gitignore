@@ -35,3 +35,4 @@ bower.json
 .powenv
 
 /pkg
+/test/account.yml
