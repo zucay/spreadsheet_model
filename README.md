@@ -52,7 +52,7 @@ SpreadsheetModel provides a find('value_of_primary_key') method.
 the return value acts as a ActiveModel.
 
 ```ruby
-row = TestModel.find(1) # returns row of id: 1 and name
+row = TestModel.find(1) # returns row of id: 1
 puts row.name # returns a value of the 'name' column
 ```
 
