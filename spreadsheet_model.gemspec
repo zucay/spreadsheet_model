@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'model-like class without database using google spreadsheet'
   spec.description   = 'model-like class without database using google spreadsheet'
-  spec.homepage      = 'https://github.com/zucay/spreadsheet-model'
+  spec.homepage      = 'https://github.com/zucay/spreadsheet_model'
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
