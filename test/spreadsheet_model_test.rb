@@ -18,9 +18,12 @@ end
 class SpreadsheetModelTest < Minitest::Test
 
   def setup
-    # TODO Create Table: id/type/value
-    # TODO TestModel.create(id: 1, type: nil, value: 100)
-    # TODO TestModel.create(id: 2, type: 'TestModel::TypeA', value: 200)
+    # TODO Create Table: id/type/values like below:
+    # TestModel.create(id: 1, type: nil, value: 100)
+    # TestModel.create(id: 2, type: 'TestModel::TypeA', value: 200, pwr: 2)
+    # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 300)
+    # TestModel.create(id: 4, type: 'TestModel::TypeA', value: 400)
+    # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 500)
   end
 
 
@@ -48,5 +51,9 @@ class SpreadsheetModelTest < Minitest::Test
 
   def test_that_it_has_a_single_table_inheritance_methods
     assert_equal 400, TestModel.find(2).double
+  end
+
+  def test_that_it_has_a_multiple_values
+    assert_equal 2, TestModel.find([3]).count
   end
 end
