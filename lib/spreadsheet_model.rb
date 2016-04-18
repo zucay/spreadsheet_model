@@ -1,9 +1,9 @@
 require "spreadsheet_model/version"
-require 'google/api_client'
 require 'google_drive'
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_model'
+require 'google/api_client'
 
 module SpreadsheetModel
   extend ActiveSupport::Concern
@@ -43,25 +43,18 @@ module SpreadsheetModel
         rows.each do |row|
           row_hash = Hash[*header.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
-          write_cache(row[0], row_hash) if row_hash.is_a? Hash
+          write_rows = [read_cache(row[0]), row_hash].compact.flatten
+          write_cache(row[0], write_rows)
         end
       end
       write_cache('__cached', true)
     end
 
-    def self.find(key)
+    # inspired by:
+    # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/relation/finder_methods.rb#L66
+    def self.find(*args)
       import unless cached?
-      row = read_cache(key)
-      return nil unless row
-      attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
-
-      if attributes['type'].to_s.present?
-        instance = attributes['type'].constantize.new(attributes)
-      else
-        instance = self.new(attributes)
-      end
-      instance.instance_variable_set(:@__row, row)
-      instance
+      find_with_ids(*args)
     end
 
     def self.cached?
@@ -69,6 +62,46 @@ module SpreadsheetModel
     end
 
     private
+
+    # inspired by:
+    # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/relation/finder_methods.rb#L411
+    def self.find_with_ids(*ids)
+      expects_array = ids.first.kind_of?(Array)
+      ids = ids.flatten.compact.uniq
+
+      case ids.size
+      when 0
+        raise RecordNotFound
+      when 1
+        if expects_array
+          result = find_some([ids.first])
+        else
+          result = find_one(ids.first)
+        end
+      else
+        find_some(ids)
+      end
+
+    end
+
+    # inspired by:
+    # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/relation/finder_methods.rb#L432
+    def self.find_one(id)
+      rows = read_cache(id)
+      return nil unless rows
+
+      row_to_instance(rows[0])
+    end
+
+    # inspired by:
+    # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/relation/finder_methods.rb#L449
+    def self.find_some(ids)
+      records = ids.map do |id|
+        read_cache(id).map do |row|
+          row_to_instance(row)
+        end
+      end.flatten
+    end
 
     def self.cache
       @@cache = Rails.cache if defined? Rails
@@ -100,5 +133,19 @@ module SpreadsheetModel
       session = ::GoogleDrive.login_with_oauth(auth_token.token)
       session.spreadsheet_by_key(sheet_key).worksheets
     end
+
+    def self.row_to_instance(row)
+      attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
+
+      if attributes['type'].to_s.present?
+        instance = attributes['type'].constantize.new(attributes)
+      else
+        instance = self.new(attributes)
+      end
+
+      instance.instance_variable_set(:@__row, row)
+      instance
+    end
+
   end
 end
