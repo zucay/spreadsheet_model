@@ -55,5 +55,13 @@ class SpreadsheetModelTest < Minitest::Test
 
   def test_that_it_has_a_multiple_values
     assert_equal 2, TestModel.find([3]).count
+    assert_equal '500', TestModel.find([3])[1].value
+  end
+
+  def test_that_it_can_recache_when_cache_is_cleared
+    TestModel.find(1).value
+    cache = TestModel.class_eval{ class_variable_get(:@@cache) }
+    cache.clear
+    assert_equal '100', TestModel.find(1).value
   end
 end
