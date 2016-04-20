@@ -71,7 +71,7 @@ module SpreadsheetModel
 
       case ids.size
       when 0
-        raise RecordNotFound
+        return nil
       when 1
         if expects_array
           result = find_some([ids.first])
@@ -81,7 +81,6 @@ module SpreadsheetModel
       else
         find_some(ids)
       end
-
     end
 
     # inspired by:
