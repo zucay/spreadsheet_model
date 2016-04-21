@@ -15,6 +15,12 @@ class TestModel::TypeA < TestModel
   end
 end
 
+class AltModel
+  include SpreadsheetModel
+  attr_accessor :pwr
+  SHEET_KEY = ENV['GOOGLE_DRIVE_TEST_MODEL_SHEET_KEY']
+end
+
 class SpreadsheetModelTest < Minitest::Test
 
   def setup
@@ -22,7 +28,7 @@ class SpreadsheetModelTest < Minitest::Test
     # TestModel.create(id: 1, type: nil, value: 100)
     # TestModel.create(id: 2, type: 'TestModel::TypeA', value: 200, pwr: 2)
     # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 300)
-    # TestModel.create(id: 4, type: 'TestModel::TypeA', value: 400)
+    # TestModel.create(id: 4, type: 'TestModel::TypeA', value: 400, pwr: 3)
     # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 500)
   end
 
@@ -70,5 +76,9 @@ class SpreadsheetModelTest < Minitest::Test
     TestModel.import
     TestModel.import
     assert_equal 1, TestModel.find([1]).count
+  end
+
+  def test_that_it_can_define_sheet_key
+    assert_equal '3', AltModel.find(4).pwr
   end
 end
