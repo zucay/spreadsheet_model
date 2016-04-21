@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spreadsheet_model (0.3.3)
+    spreadsheet_model (0.3.4)
       activemodel
       activesupport
       google_drive (~> 1.0)

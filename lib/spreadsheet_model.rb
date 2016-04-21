@@ -16,7 +16,7 @@ module SpreadsheetModel
 
     def self.attr_accessor(*args)
       super
-      @@column_names = args
+      @column_names = args
     end
 
     def [](name)
@@ -141,7 +141,7 @@ module SpreadsheetModel
 
     def self.row_to_instance(row)
       return nil unless row
-      attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
+      attributes = row.select { |key, _| @column_names.include?(key.to_sym) }
 
       if attributes['type'].to_s.present?
         instance = attributes['type'].constantize.new(attributes)
