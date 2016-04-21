@@ -40,11 +40,17 @@ module SpreadsheetModel
       sheets.each do |sheet|
         rows = sheet.rows.dup
         header = rows.shift
-        rows.each do |row|
+
+        store_hash = rows.each_with_object({}) do |row, store_hash|
           row_hash = Hash[*header.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
-          write_rows = [read_cache(row[0]), row_hash].compact.flatten
-          write_cache(row[0], write_rows)
+          write_rows = [store_hash[row[0]], row_hash].compact.flatten
+          store_hash[row[0]] = write_rows
+          store_hash
+        end
+
+        store_hash.each do |k, v|
+          write_cache(k, v)
         end
       end
       write_cache('__cached', true)
@@ -134,6 +140,7 @@ module SpreadsheetModel
     end
 
     def self.row_to_instance(row)
+      return nil unless row
       attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
 
       if attributes['type'].to_s.present?

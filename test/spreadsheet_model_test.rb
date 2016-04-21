@@ -65,4 +65,10 @@ class SpreadsheetModelTest < Minitest::Test
     cache.clear
     assert_equal '100', TestModel.find(1).value
   end
+
+  def test_that_it_can_import
+    TestModel.import
+    TestModel.import
+    assert_equal 1, TestModel.find([1]).count
+  end
 end
