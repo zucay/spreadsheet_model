@@ -27,9 +27,13 @@ module SpreadsheetModel
       @__row[name] = value
     end
 
-    def self.import
+    def self.sheet_key
       sheet_key = ENV["GOOGLE_DRIVE_#{name.demodulize.underscore.upcase}_SHEET_KEY"]
       sheet_key = self::SHEET_KEY if defined? self::SHEET_KEY
+      sheet_key
+    end
+
+    def self.import
       title_regexp = /.*/
       title_regexp = self::SHEET_TITLE_REGEXP if defined? self::SHEET_TITLE_REGEXP
 
