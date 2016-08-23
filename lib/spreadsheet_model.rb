@@ -43,10 +43,10 @@ module SpreadsheetModel
 
       sheets.each do |sheet|
         rows = sheet.rows.dup
-        header = rows.shift
+        @__header = rows.shift
 
         store_hash = rows.each_with_object({}) do |row, store_hash|
-          row_hash = Hash[*header.zip(row).flatten]
+          row_hash = Hash[*@__header.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
           write_rows = [store_hash[row[0]], row_hash].compact.flatten
           store_hash[row[0]] = write_rows
@@ -157,5 +157,8 @@ module SpreadsheetModel
       instance
     end
 
+    def self.column_names
+      @__header
+    end
   end
 end

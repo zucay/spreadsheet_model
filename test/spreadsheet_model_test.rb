@@ -81,4 +81,8 @@ class SpreadsheetModelTest < Minitest::Test
   def test_that_it_can_define_sheet_key
     assert_equal '3', AltModel.find(4).pwr
   end
+
+  def test_that_it_can_import
+    assert_equal %w(id, type, value), TestModel.column_names
+  end
 end
