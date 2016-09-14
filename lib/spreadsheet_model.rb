@@ -16,7 +16,7 @@ module SpreadsheetModel
 
     def self.attr_accessor(*args)
       super
-      @@column_names = args
+      @column_names = args
     end
 
     def [](name)
@@ -27,9 +27,13 @@ module SpreadsheetModel
       @__row[name] = value
     end
 
-    def self.import
+    def self.sheet_key
       sheet_key = ENV["GOOGLE_DRIVE_#{name.demodulize.underscore.upcase}_SHEET_KEY"]
       sheet_key = self::SHEET_KEY if defined? self::SHEET_KEY
+      sheet_key
+    end
+
+    def self.import
       title_regexp = /.*/
       title_regexp = self::SHEET_TITLE_REGEXP if defined? self::SHEET_TITLE_REGEXP
 
@@ -40,11 +44,17 @@ module SpreadsheetModel
       sheets.each do |sheet|
         rows = sheet.rows.dup
         header = rows.shift
-        rows.each do |row|
+
+        store_hash = rows.each_with_object({}) do |row, store_hash|
           row_hash = Hash[*header.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
-          write_rows = [read_cache(row[0]), row_hash].compact.flatten
-          write_cache(row[0], write_rows)
+          write_rows = [store_hash[row[0]], row_hash].compact.flatten
+          store_hash[row[0]] = write_rows
+          store_hash
+        end
+
+        store_hash.each do |k, v|
+          write_cache(k, v)
         end
       end
       write_cache('__cached', true)
@@ -71,7 +81,7 @@ module SpreadsheetModel
 
       case ids.size
       when 0
-        raise RecordNotFound
+        return nil
       when 1
         if expects_array
           result = find_some([ids.first])
@@ -81,7 +91,6 @@ module SpreadsheetModel
       else
         find_some(ids)
       end
-
     end
 
     # inspired by:
@@ -135,7 +144,8 @@ module SpreadsheetModel
     end
 
     def self.row_to_instance(row)
-      attributes = row.select { |key, _| @@column_names.include?(key.to_sym) }
+      return nil unless row
+      attributes = row.select { |key, _| @column_names.include?(key.to_sym) }
 
       if attributes['type'].to_s.present?
         instance = attributes['type'].constantize.new(attributes)
