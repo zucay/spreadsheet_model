@@ -1,10 +1,10 @@
 PATH
   remote: .
   specs:
-    spreadsheet_model (0.4.0)
+    spreadsheet_model (0.4.1)
       activemodel
       activesupport
-      google_drive (~> 1.0)
+      google_drive
 
 GEM
   remote: https://rubygems.org/
@@ -100,9 +100,9 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
-  minitest (~> 5.0)
+  minitest
   pry
-  rake (~> 10.0)
+  rake
   spreadsheet_model!
 
 BUNDLED WITH
