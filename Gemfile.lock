@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    spreadsheet_model (0.3.4)
+    spreadsheet_model (0.4.0)
       activemodel
       activesupport
       google_drive (~> 1.0)
@@ -106,4 +106,4 @@ DEPENDENCIES
   spreadsheet_model!
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

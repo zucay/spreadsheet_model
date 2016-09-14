@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'pry'
 
 class TestModel
   include SpreadsheetModel
@@ -21,17 +22,20 @@ class AltModel
   SHEET_KEY = ENV['GOOGLE_DRIVE_TEST_MODEL_SHEET_KEY']
 end
 
-class SpreadsheetModelTest < Minitest::Test
+class ModelWithoutAccessor
+  include SpreadsheetModel
+  SHEET_KEY = ENV['GOOGLE_DRIVE_TEST_MODEL_SHEET_KEY']
+end
 
+class SpreadsheetModelTest < Minitest::Test
   def setup
-    # TODO Create Table: id/type/values like below:
+    # HOW TO RUN TEST: Create spreasheet with following data
     # TestModel.create(id: 1, type: nil, value: 100)
     # TestModel.create(id: 2, type: 'TestModel::TypeA', value: 200, pwr: 2)
     # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 300)
     # TestModel.create(id: 4, type: 'TestModel::TypeA', value: 400, pwr: 3)
-    # TestModel.create(id: 3, type: 'TestModel::TypeA', value: 500)
+    # TestModel.create(id: 5, type: 'TestModel::TypeA', value: 500)
   end
-
 
   def test_that_it_has_a_version_number
     refute_nil ::SpreadsheetModel::VERSION
@@ -73,12 +77,21 @@ class SpreadsheetModelTest < Minitest::Test
   end
 
   def test_that_it_can_import
-    TestModel.import
-    TestModel.import
     assert_equal 1, TestModel.find([1]).count
   end
 
   def test_that_it_can_define_sheet_key
     assert_equal '3', AltModel.find(4).pwr
+  end
+
+  def test_that_it_has_correct_columns
+    assert_equal %w(id type value), TestModel.column_names
+    assert_equal %w(pwr), AltModel.column_names
+    assert_equal %w(id type value pwr), ModelWithoutAccessor.column_names
+  end
+
+  def test_that_it_has_all_ids
+    assert 2 < TestModel.keys.count
+    assert_match /\d+/, TestModel.keys.join('')
   end
 end
