@@ -16,7 +16,8 @@ module SpreadsheetModel
 
     def self.attr_accessor(*args)
       super
-      @column_names = args
+      @column_names ||= []
+      @column_names.concat(args.map(&:to_s))
     end
 
     def [](name)
@@ -41,12 +42,13 @@ module SpreadsheetModel
         sheet.title =~ title_regexp
       end
 
-      sheets.each do |sheet|
+      keys = sheets.each_with_object([]) do |sheet, keys|
         rows = sheet.rows.dup
-        @__header = rows.shift
+        header = rows.shift
+        @column_names ||= header
 
         store_hash = rows.each_with_object({}) do |row, store_hash|
-          row_hash = Hash[*@__header.zip(row).flatten]
+          row_hash = Hash[*header.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
           write_rows = [store_hash[row[0]], row_hash].compact.flatten
           store_hash[row[0]] = write_rows
@@ -55,8 +57,11 @@ module SpreadsheetModel
 
         store_hash.each do |k, v|
           write_cache(k, v)
+          keys << k
         end
+        keys
       end
+      write_cache('__keys', keys)
       write_cache('__cached', true)
     end
 
@@ -69,6 +74,11 @@ module SpreadsheetModel
 
     def self.cached?
       !!read_cache('__cached')
+    end
+
+    def self.keys
+      import unless cached?
+      read_cache('__keys')
     end
 
     private
@@ -145,7 +155,7 @@ module SpreadsheetModel
 
     def self.row_to_instance(row)
       return nil unless row
-      attributes = row.select { |key, _| @column_names.include?(key.to_sym) }
+      attributes = row.select { |key, _| @column_names.include?(key.to_s) }
 
       if attributes['type'].to_s.present?
         instance = attributes['type'].constantize.new(attributes)
@@ -158,7 +168,8 @@ module SpreadsheetModel
     end
 
     def self.column_names
-      @__header
+      import unless cached?
+      @column_names
     end
   end
 end
