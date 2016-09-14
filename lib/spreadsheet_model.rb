@@ -42,11 +42,10 @@ module SpreadsheetModel
 
       keys = sheets.each_with_object([]) do |sheet, keys|
         rows = sheet.rows.dup
-        header = rows.shift
-        @column_names = header unless @column_names
+        @column_names = rows.shift
 
         store_hash = rows.each_with_object({}) do |row, store_hash|
-          row_hash = Hash[*header.zip(row).flatten]
+          row_hash = Hash[*@column_names.zip(row).flatten]
           row_hash = @import_callback.call(row_hash) if @import_callback
           write_rows = [store_hash[row[0]], row_hash].compact.flatten
           store_hash[row[0]] = write_rows
@@ -59,8 +58,8 @@ module SpreadsheetModel
         end
         keys
       end
-      write_cache('__keys', keys)
-      write_cache('__cached', true)
+      write_cache('__spreadsheetmodel_keys', keys)
+      write_cache('__spreadsheetmodel_cached', true)
     end
 
     # inspired by:
@@ -71,12 +70,12 @@ module SpreadsheetModel
     end
 
     def self.cached?
-      !!read_cache('__cached')
+      !!read_cache('__spreadsheetmodel_cached')
     end
 
     def self.keys
       import unless cached?
-      read_cache('__keys')
+      read_cache('__spreadsheetmodel_keys')
     end
 
     def self.column_names
