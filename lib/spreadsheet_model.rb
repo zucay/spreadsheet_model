@@ -15,8 +15,7 @@ module SpreadsheetModel
 
     def self.attr_accessor(*args)
       super
-      @column_names ||= []
-      @column_names.concat(args.map(&:to_s))
+      @accessors = args
     end
 
     def [](name)
@@ -44,7 +43,7 @@ module SpreadsheetModel
       keys = sheets.each_with_object([]) do |sheet, keys|
         rows = sheet.rows.dup
         header = rows.shift
-        @column_names ||= header
+        @column_names = header unless @column_names
 
         store_hash = rows.each_with_object({}) do |row, store_hash|
           row_hash = Hash[*header.zip(row).flatten]
@@ -80,6 +79,11 @@ module SpreadsheetModel
       read_cache('__keys')
     end
 
+    def self.column_names
+      import unless cached?
+      @column_names
+    end
+
     private
 
     # inspired by:
@@ -106,8 +110,8 @@ module SpreadsheetModel
     # https://github.com/rails/rails/blob/4-2-stable/activerecord/lib/active_record/relation/finder_methods.rb#L432
     def self.find_one(id)
       rows = read_cache(id)
-      return nil unless rows
 
+      return nil unless rows
       row_to_instance(rows[0])
     end
 
@@ -154,9 +158,8 @@ module SpreadsheetModel
 
     def self.row_to_instance(row)
       return nil unless row
-      attributes = row.select { |key, _| @column_names.include?(key.to_s) }
-
-      if attributes['type'].to_s.present?
+      attributes = row.select { |key, _| @accessors.try(:include?, key.to_sym) }
+      if row['type'].to_s.present?
         instance = attributes['type'].constantize.new(attributes)
       else
         instance = self.new(attributes)
@@ -164,11 +167,6 @@ module SpreadsheetModel
 
       instance.instance_variable_set(:@__row, row)
       instance
-    end
-
-    def self.column_names
-      import unless cached?
-      @column_names
     end
   end
 end
