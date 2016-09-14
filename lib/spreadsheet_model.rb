@@ -3,7 +3,6 @@ require 'google_drive'
 require 'active_support'
 require 'active_support/core_ext'
 require 'active_model'
-require 'google/api_client'
 
 module SpreadsheetModel
   extend ActiveSupport::Concern
